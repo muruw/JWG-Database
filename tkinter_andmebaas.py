@@ -303,15 +303,7 @@ class ÕpilasteAB :
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
-        
-        load_jwg = Image.open("jwg.jpg")
-        render_jwg = ImageTk.PhotoImage(load_jwg)
-        
-        img_jwg = Label(root, image=render_jwg)
-        img_jwg.image = render_jwg
-        img_jwg.grid(row = 7, column = 0, columnspan = 1, rowspan = 1,
-                     padx = 10, pady = 10, sticky = S + N)
-        
+        #Siia peaks tulema pilt jwg logo/ muruw logo
         
         
 # root - raam
