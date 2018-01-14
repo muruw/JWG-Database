@@ -137,7 +137,6 @@ class ÕpilasteAB :
         failinimi = self.xl_entry_value.get()
         wb = openpyxl.load_workbook(str(failinimi) + ".xlsx")
         wb_sheet = wb.active
-##        try:
         self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Klass, Spordiala, Sugu) " +
                         "VALUES ('" +
                         wb_sheet["J10"].value + "', '" +
@@ -149,15 +148,24 @@ class ÕpilasteAB :
                         #siin kasutada, on vaja wb_sheet panna võrduma wb.active
                         #ehk praegune sheet, mis lahti excelis
         self.db_conn.commit()
-##        except:
-##            print("Exceli faili ei suutnud lugeda")
-            
-        self.update_listbox() 
-##---------------------------------------------------------------------
-##---------------------------------------------------------------------
-##----------------------GUI--------------------------------------------
-##---------------------------------------------------------------------
-##---------------------------------------------------------------------
+        self.update_listbox()
+        
+    def stud_filter(self, ktg):
+        #ktg- kategooria, mis tulbast väärtust otsida(value)
+        value = self.flt_entry_value.get()
+        self.db_conn.execute("SELECT " + str(ktg) + " FROM Õpilased WHERE "+ str(ktg) + " = " + str(value))
+        print(ktg + " valitud")
+
+        
+    def open_filter_window(self):
+        self.filter_window(root)
+        
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+#----------------------GUI--------------------------------------------
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+
     def __init__(self, root):
         root.title("JWG Andmebaas")
         root.geometry("500x600")
@@ -260,13 +268,24 @@ class ÕpilasteAB :
         xl_label = Label(root, text= "Exceli fail", bg = "white")
         xl_label.grid(row = 5, column = 0, padx = 10, pady = 10, sticky = W)
         
-        #teksti-kast
-        
         self.xl_entry_value = StringVar(root, value = "")
         self.xl_entry = ttk.Entry(root,
                                   textvariable = self.xl_entry_value)
         self.xl_entry.grid(row = 5, column = 1, padx = 10, pady = 10, sticky = W)
-
+        
+        
+        #Filtreerimise nupp ja entrybox
+        flt_label = ttk.Button(root,
+                               text = "Filtreeri",
+                               command = lambda: self.open_filter_window())
+        flt_label.grid(row = 5, column = 2,
+                               padx = 10, pady = 10, sticky = W)
+        
+        self.flt_entry_value = StringVar(root, value = "")
+        self.flt_entry = ttk.Entry(root,
+                              textvariable = self.flt_entry_value)
+        self.flt_entry.grid(row = 5, column = 3,
+                               padx = 10, pady = 10, sticky = W)
         # ----- SEITSMES RIDA -----
         # ----- SEITSMES RIDA -----
         # ----- SEITSMES RIDA -----
@@ -296,15 +315,46 @@ class ÕpilasteAB :
                             command=lambda: self.update_student())
         self.update_button.grid(row=6, column=3,
                                 padx=10, pady=10,sticky = E)
+
+        # ----- KAHEKSAS RIDA -----
+        # ----- KAHEKSAS RIDA -----
+        # ----- KAHEKSAS RIDA -----
+        # ----- KAHEKSAS RIDA -----
+        # ----- KAHEKSAS RIDA -----
+    
+    
+    
+    #-----------FILTER AKEN-------------
+    #-----------FILTER AKEN-------------
+    #-----------FILTER AKEN-------------
+    #-----------FILTER AKEN-------------
+    #-----------FILTER AKEN-------------
         
+    def filter_window(self, root):
+        Label(root, text= "filtreerimine..", bg = "white")
+        aken_filter = Toplevel()
+        aken_filter.title("Filtreeri")
+        aken_filter.geometry("150x300")
+        aken_filter["bg"] = "white"
+        #aken_filter on uus root        
         
-        # ----- KAHEKSAS RIDA -----
-        # ----- KAHEKSAS RIDA -----
-        # ----- KAHEKSAS RIDA -----
-        # ----- KAHEKSAS RIDA -----
-        # ----- KAHEKSAS RIDA -----
-        #Siia peaks tulema pilt jwg logo/ muruw logo
+        self.filter_list_box = Listbox(aken_filter)
         
+        #.insert(jrk number, text) lisab listboxi objekti
+        self.filter_list_box.insert(0, "Eesnimi")
+        self.filter_list_box.insert(1, "Perekonnanimi")
+        self.filter_list_box.insert(2, "Klass")
+        self.filter_list_box.insert(3, "Spordiala")
+        self.filter_list_box.insert(4, "Sugu")
+        self.filter_list_box.grid(row=0, column=0, columnspan = 2, rowspan = 5,
+                           padx=10, pady=10, sticky = W+E)
+        self.filter_list_box.bind("<<ListboxSelect>>", )
+        
+        #Filtreerimiseks vajalik nupp
+        self.filter_window_button = ttk.Button(aken_filter, text = "Filtreeri",
+                                          command = self.stud_filter(self.filter_list_box.curselection()))
+        self.filter_window_button.grid(row = 5, column = 0, rowspan= 2,
+                                       padx = 30, pady= 10, sticky = W + E)
         
 # root - raam
 root = Tk()
