@@ -137,7 +137,6 @@ class ÕpilasteAB :
         failinimi = self.xl_entry_value.get()
         wb = openpyxl.load_workbook(str(failinimi) + ".xlsx")
         wb_sheet = wb.active
-##        try:
         self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Klass, Spordiala, Sugu) " +
                         "VALUES ('" +
                         wb_sheet["J10"].value + "', '" +
@@ -149,15 +148,16 @@ class ÕpilasteAB :
                         #siin kasutada, on vaja wb_sheet panna võrduma wb.active
                         #ehk praegune sheet, mis lahti excelis
         self.db_conn.commit()
-##        except:
-##            print("Exceli faili ei suutnud lugeda")
-            
-        self.update_listbox() 
-##---------------------------------------------------------------------
-##---------------------------------------------------------------------
-##----------------------GUI--------------------------------------------
-##---------------------------------------------------------------------
-##---------------------------------------------------------------------
+        self.update_listbox()
+        
+
+        
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+#----------------------GUI--------------------------------------------
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+
     def __init__(self, root):
         root.title("JWG Andmebaas")
         root.geometry("500x600")
@@ -173,6 +173,7 @@ class ÕpilasteAB :
         scrollbar = Scrollbar(root)
  
         self.list_box = Listbox(root)
+        #bind - kui vajutad listboxi ehk kasutad(<<ListboxSelect>>), siis kutsud funktsiooni load.student
         self.list_box.bind('<<ListboxSelect>>', self.load_student)
         self.list_box.insert(1, "Õpilased...")
         self.list_box.grid(row=0, column=0, columnspan = 2, rowspan = 5, padx=10, pady=10, sticky = W+E+N+S)
@@ -260,13 +261,24 @@ class ÕpilasteAB :
         xl_label = Label(root, text= "Exceli fail", bg = "white")
         xl_label.grid(row = 5, column = 0, padx = 10, pady = 10, sticky = W)
         
-        #teksti-kast
-        
         self.xl_entry_value = StringVar(root, value = "")
         self.xl_entry = ttk.Entry(root,
                                   textvariable = self.xl_entry_value)
         self.xl_entry.grid(row = 5, column = 1, padx = 10, pady = 10, sticky = W)
-
+        
+        
+        #Filtreerimise nupp ja entrybox
+        flt_label = ttk.Button(root,
+                               text = "Filtreeri",
+                               command = lambda: self.filter_from_scrollbar())
+        flt_label.grid(row = 5, column = 2,
+                               padx = 10, pady = 10, sticky = W)
+        
+        self.flt_entry_value = StringVar(root, value = "")
+        self.flt_entry = ttk.Entry(root,
+                              textvariable = self.flt_entry_value)
+        self.flt_entry.grid(row = 5, column = 3,
+                               padx = 10, pady = 10, sticky = W)
         # ----- SEITSMES RIDA -----
         # ----- SEITSMES RIDA -----
         # ----- SEITSMES RIDA -----
@@ -296,16 +308,14 @@ class ÕpilasteAB :
                             command=lambda: self.update_student())
         self.update_button.grid(row=6, column=3,
                                 padx=10, pady=10,sticky = E)
-        
-        
+
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
         # ----- KAHEKSAS RIDA -----
-        #Siia peaks tulema pilt jwg logo/ muruw logo
-        
-        
+ 
+
 # root - raam
 root = Tk()
 # Tee Andmebaas ekraanile
