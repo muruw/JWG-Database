@@ -7,40 +7,43 @@ import sqlite3
 
 
 class ÕpilasteAB :
-    #Kõik andmed alguses nulliks, et neid määrata
-    # andmebaasi jaoks vajalik connection
+    
+    #db_conn to represent the connection with the database
     db_conn = 0
-    # Cursor andmebaasi jaoks
+    
+    #c - cursor to perform SQL functions
     c = 0
-    # Hoiab õpilase ID-d
+    
+    #It's neccessary to index students
     curr_student = 0
     
     def setup_db(self):
-        # Ava/Tee uus andmebaas
-        self.db_conn = sqlite3.connect('UT_Andmebaas.db')
+        
+        #Connect to the given database, otherwise create a new database
+        self.db_conn = sqlite3.connect('UT_Database.db')
         self.c = self.db_conn.cursor()
  
-        # Try ja except kontrollib võimalikke erroreid
+        # Try for errors
         try:
             self.db_conn.execute("CREATE TABLE if not exists Õpilased(ID INTEGER PRIMARY KEY AUTOINCREMENT, FName TEXT, "
-                                 "LName TEXT, Klass INTEGER, Spordiala TEXT, Sugu TEXT, Length INTEGER, "
+                                 "LName TEXT, Class INTEGER, Sports TEXT, Sex TEXT, Length INTEGER, "
                                  "Club TEXT, Freq INTEGER, Trainer TEXT, Achiev TEXT);")
  
             self.db_conn.commit()
  
         except sqlite3.OperationalError:
-            print("ERROR : Tabelit ei olnud võimalik teha")
-        #self.stud_from_excel() 
+            print("ERROR : 1 : Tabelit ei olnud võimalik teha")
+        
  
     def stud_submit(self):
-        # Lisa õpilane andmebaasi
-        self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Klass, Spordiala, Sugu, Length, Club, Freq, Trainer, Achiev) " +
+        #Add a student to the database
+        self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Class, Sports, Sex, Length, Club, Freq, Trainer, Achiev) " +
                              "VALUES ('" +
                              self.fn_entry_value.get() + "', '" +
                              self.ln_entry_value.get() + "', '" +
-                             self.klass_entry_value.get() + "', '" +
-                             self.spordiala_entry_value.get() + "', '" +
-                             self.sugu_entry_value.get() + "', '" +
+                             self.class_entry_value.get() + "', '" +
+                             self.sports_entry_value.get() + "', '" +
+                             self.sex_entry_value.get() + "', '" +
                              self.length_entry_value.get() + "', '" +
                              self.club_entry_value.get() + "', '" +
                              self.freq_entry_value.get() + "', '" +
@@ -48,28 +51,28 @@ class ÕpilasteAB :
                              self.achiev_entry_value.get() + "')")
 
         
-        # Tühjenda sisestamiseks mõeldud kastid
+        #Clear the entry boxes
         self.fn_entry.delete(0, "end")
         self.ln_entry.delete(0, "end")
-        self.klass_entry.delete(0, "end")
-        self.spordiala_entry.delete(0, "end")
-        self.sugu_entry.delete(0, "end")
+        self.class_entry.delete(0, "end")
+        self.sports_entry.delete(0, "end")
+        self.sex_entry.delete(0, "end")
         self.length_entry.delete(0, "end")
         self.club_entry.delete(0, "end")
         self.freq_entry.delete(0, "end")
         self.trainer_entry.delete(0, "end")
         self.achiev_entry.delete(0, "end")
         
+        #It's neccessary to commit the changes and update the listbox to show the changes
         self.db_conn.commit()
-        # Uuenda listboxi
         self.update_listbox()
 
          
     def update_listbox(self):
-        # kustuta õpilane listboxist
+        #Clear listbox to show changes made after
         self.list_box.delete(0, END)
  
-        # võta andmebaasist õpilane
+        #For loop every student in the database
         try:
             result = self.c.execute("SELECT ID, FName, LName FROM Õpilased")
  
@@ -77,70 +80,67 @@ class ÕpilasteAB :
                 stud_id = row[0]
                 stud_fname = row[1]
                 stud_lname = row[2]
-                # Pane muudetud õpilane listboxi
+                
+                #Add all the students into the database
+                #We had to clear the listbox at the start of the fuction to avoid creating duplicated students into listbox
                 self.list_box.insert(stud_id,
                                      stud_fname + " " +
                                      stud_lname)
  
         except sqlite3.OperationalError:
-            print("Selline andmebaas ei eksisteeri")
+            print("ERROR : 2.1 : Given database doesn't exist")
  
         except:
-            print("1: Ei saanud andmeid andmebaasist")
+            print("ERROR : 2.2 : Couldn't recieve data from DB ")
     
-    def load_student(self, event=None):
+    def load_student(self, event = None):
         
-        # Saa õpilase id
+        #Get the id
         lb_widget = event.widget
         index = str(lb_widget.curselection()[0] + 1)
- 
-        # Salvesta selle õpilase id
+
         self.curr_student = index
-        #try:
-        result = self.c.execute("SELECT ID, FName, LName, Klass, Spordiala, Sugu, Length, Club, Freq, Trainer, Achiev FROM Õpilased WHERE ID=" + index)
+
+        result = self.c.execute("SELECT ID, FName, LName, Class, Sports, Sex, Length, Club, Freq, Trainer, Achiev FROM Õpilased WHERE ID=" + index)
         for row in result:
             stud_id = row[0]
             stud_fname = row[1]
             stud_lname = row[2]
-            stud_klass = row[3]
-            stud_spordiala = row[4]
-            stud_sugu = row[5]
+            stud_class = row[3]
+            stud_sports = row[4]
+            stud_sex = row[5]
             stud_length = row[6]
             stud_club = row[7]
             stud_freq = row[8]
             stud_trainer = row[9]
             stud_achiev = row[10]
             
-                # pane vajutatud õpilase väärtused sisestamise kasti
+            #Change all the entry values with data from the chosen student
             self.fn_entry_value.set(stud_fname)
             self.ln_entry_value.set(stud_lname)
-            self.klass_entry_value.set(stud_klass)
-            self.spordiala_entry_value.set(stud_spordiala)
-            self.sugu_entry_value.set(stud_sugu)
+            self.class_entry_value.set(stud_class)
+            self.sports_entry_value.set(stud_sports)
+            self.sex_entry_value.set(stud_sex)
             self.length_entry_value.set(stud_length)
             self.club_entry_value.set(stud_club)
             self.freq_entry_value.set(stud_freq)
             self.trainer_entry_value.set(stud_trainer)
             self.achiev_entry_value.set(stud_achiev)
-##        except sqlite3.OperationalError:
-##            print("Õpilase kättesaamisel tekib viga")
-##        except:
-##            print("2 : Ei saanud andmeid andmebaasist")
  
-    # Värskenda õpilaste listi
+    
     def update_student(self, event=None):
-        # uuenda andmeid
+        #Update student's data
         try:
             self.db_conn.execute("UPDATE Õpilased SET FName='" +
                                 self.fn_entry_value.get() +
                                 "', LName='" +
                                 self.ln_entry_value.get() +
-                                "', Klass='" +
-                                self.klass_entry_value.get() +
-                                "', Spordiala='" +
-                                self.spordiala_entry_value.get() +
-                                "', Sugu='" +
-                                self.sugu_entry_value.get() +
+                                "', Class='" +
+                                self.class_entry_value.get() +
+                                "', Sports='" +
+                                self.sports_entry_value.get() +
+                                "', Sex='" +
+                                self.sex_entry_value.get() +
                                 "', Length='" +
                                 self.length_entry_value.get() +
                                 "', Club='" +
@@ -156,41 +156,42 @@ class ÕpilasteAB :
             self.db_conn.commit()
  
         except sqlite3.OperationalError:
-            print("Andmebaasi ei olnud võimalik uuendada")
+            print("ERROR : 3 : Couldn't update the database")
  
-        # Tühjenda kastid
         self.fn_entry.delete(0, "end")
         self.ln_entry.delete(0, "end")
-        self.klass_entry.delete(0, "end")
-        self.spordiala_entry.delete(0, "end")
-        self.sugu_entry.delete(0, "end")
+        self.class_entry.delete(0, "end")
+        self.sports_entry.delete(0, "end")
+        self.sex_entry.delete(0, "end")
         self.length_entry.delete(0, "end")
         self.club_entry.delete(0, "end")
         self.freq_entry.delete(0, "end")
         self.trainer.delete(0, "end")
         self.achiev.delete(0, "end")
- 
-        # Uuenda listboxi uute õpilastega
+        
         self.update_listbox()
         
     def stud_from_excel(self):
-        #Exceli failide töötlemine andmebaasi
+        #Creating the file dialog
         fileName = filedialog.askopenfilename(filetypes = (("Excel file", "*.xlsx"), ("All files", "*.*")))
-        #failinimi = self.xl_entry_value.get()
+
+        #Opening the workbook
         wb = openpyxl.load_workbook(fileName, data_only = True)
         wb_sheet = wb.active
 
         data_list = []
         empty_string = ""
             
+        #Because the Excel file cells are from J10 to J19,
+        #I made a for loop to check for empty cells
         for m in range(0, 10):
             if wb_sheet["J1"+str(m)].value:
                 data_list.append(wb_sheet["J1"+str(m)].value)
             else:
                 data_list.append(empty_string)
                 
-        
-        self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Klass, Spordiala, Sugu, Length, Club, Freq, Trainer, Achiev) "
+        #Like before, add the data from the list to the DB
+        self.db_conn.execute("INSERT INTO Õpilased (FName, LName, Class, Sports, Sex, Length, Club, Freq, Trainer, Achiev) "
                         "VALUES ('" +
                         data_list[0] + "', '" +
                         data_list[1] + "', '" +
@@ -202,20 +203,19 @@ class ÕpilasteAB :
                         data_list[7] + "', '" +
                         data_list[8] + "', '" +
                         data_list[9] + "')")
-                        #wb_sheet["B3.."].value() ei tööta, sest funktsiooni ei saa
-                        #siin kasutada, on vaja wb_sheet panna võrduma wb.active
-                        #ehk praegune sheet, mis lahti excelis
+
+
         self.db_conn.commit()
         self.update_listbox()        
         
     def search_student_command(self):
-        #Puhastan kõik värvidest
+        #I am refreshing the listbox to clear all the filters (clear the colour from filtered students)
         ÕpilasteAB.update_listbox(self)
 
-        #Kasutaja otsitud õpilased värvitakse roheliseks
-        #s_t - s_t 
+        #All the students that contain searched data are coloured
+        #s_t - searched student
         s_t = self.flt_entry_value.get()
-        self.c.execute("SELECT ID FROM Õpilased WHERE FName = ? OR LName = ? OR Spordiala = ? OR Klass = ? OR Sugu = ? OR Length = ? OR Club = ? OR Freq = ? OR Trainer = ? OR Achiev = ?",
+        self.c.execute("SELECT ID FROM Õpilased WHERE FName = ? OR LName = ? OR Sports = ? OR Class = ? OR Sex = ? OR Length = ? OR Club = ? OR Freq = ? OR Trainer = ? OR Achiev = ?",
                        (s_t, s_t, s_t, s_t, s_t, s_t, s_t, s_t, s_t, s_t))
         result = self.c.fetchall()
         for stud in result:
@@ -233,7 +233,7 @@ class ÕpilasteAB :
         root.title("JWG Andmebaas")
         root.geometry("764x634")
         root.resizable(width = False, height = False)
-        root["bg"] = "white" #taust - valge
+        root["bg"] = "white" #Background = white
 
         #Taustapilt
         bg_image = PhotoImage(file= "ut_taust4_fixed.png")
@@ -241,24 +241,24 @@ class ÕpilasteAB :
         x.photo=bg_image
         x.place(x = 0, y = 0)
         
-        # ----- ESIMENE RIDA -----
-        # ----- ESIMENE RIDA -----
-        # ----- ESIMENE RIDA -----
-        # ----- ESIMENE RIDA -----
-        # ----- ESIMENE RIDA -----
+        # ----- FIRST ROW -----
+        # ----- FIRST ROW -----
+        # ----- FIRST ROW -----
+        # ----- FIRST ROW -----
+        # ----- FIRST ROW -----
  
         self.list_box = Listbox(root)
-        #bind - kui vajutad listboxi ehk kasutad(<<ListboxSelect>>), siis kutsud funktsiooni load.student
+        #.bind allows to call a function when Listbox is pressed with mouse click
         self.list_box.bind('<<ListboxSelect>>', self.load_student)
         self.list_box.insert(1, "Õpilased...")
         self.list_box.grid(row=0, column=0, columnspan = 2, rowspan = 5, padx=10, pady=10, sticky = W+E+N+S)
  
-        #Andmebaas valmib funktsiooniga -> setup_db()
-        #Uuenda õpilaste listboxi
+        #Loading/Creating the database
+        #Updating the listbox
         self.setup_db()
         self.update_listbox()
         
-        #Eesnimi
+        #First name
         fn_label = Label(root, text="Eesnimi", bg = "white")
         fn_label.grid(row = 0, column = 2, padx = 10, pady = 10, sticky = W)
 
@@ -267,7 +267,7 @@ class ÕpilasteAB :
                                   textvariable = self.fn_entry_value)
         self.fn_entry.grid(row = 0, column = 3, padx = 10, pady = 10, sticky = W)
         
-        #Perekonnanimi
+        #Last name
         ln_label = Label(root, text="Perekonnanimi", bg = "white")
         ln_label.grid(row=0, column=4, padx=10, pady=10, sticky=W)
         
@@ -276,46 +276,46 @@ class ÕpilasteAB :
                                   textvariable=self.ln_entry_value)
         self.ln_entry.grid(row=0, column=5, padx=10, pady=10, sticky=W)
         
-        # ----- TEINE RIDA -----
-        #------ TEINE RIDA -----
-        #------ TEINE RIDA -----
-        # ----- TEINE RIDA -----
-        #------ TEINE RIDA -----
+        # ----- SECOND ROW -----
+        #------ SECOND ROW -----
+        #------ SECOND ROW -----
+        # ----- SECOND ROW -----
+        #------ SECOND ROW -----
         
-        #Sugu
-        sugu_label = Label(root, text = "Sugu", bg = "white")
-        sugu_label.grid(row = 1, column = 2, padx = 10, pady= 10, sticky = W)
+        #Sex
+        sex_label = Label(root, text = "Sugu", bg = "white")
+        sex_label.grid(row = 1, column = 2, padx = 10, pady= 10, sticky = W)
         
-        self.sugu_entry_value = StringVar(root, value = "")
-        self.sugu_entry = ttk.Entry(root,
-                                    textvariable = self.sugu_entry_value)
-        self.sugu_entry.grid(row = 1, column = 3, padx = 10, pady= 10, sticky = E)
+        self.sex_entry_value = StringVar(root, value = "")
+        self.sex_entry = ttk.Entry(root,
+                                    textvariable = self.sex_entry_value)
+        self.sex_entry.grid(row = 1, column = 3, padx = 10, pady= 10, sticky = E)
 
-        #Mitmendas klassis käib
-        klass_label = Label(root, text = "Klass", bg = "white")
-        klass_label.grid(row = 1, column = 4, padx = 10, pady = 10, sticky = W)
+        #Student's class
+        class_label = Label(root, text = "Klass", bg = "white")
+        class_label.grid(row = 1, column = 4, padx = 10, pady = 10, sticky = W)
         
-        self.klass_entry_value = StringVar(root, value = "")
-        self.klass_entry = ttk.Entry(root,
-                                     textvariable = self.klass_entry_value)
-        self.klass_entry.grid(row = 1, column = 5, padx = 10, pady = 10, sticky = E)
+        self.class_entry_value = StringVar(root, value = "")
+        self.class_entry = ttk.Entry(root,
+                                     textvariable = self.class_entry_value)
+        self.class_entry.grid(row = 1, column = 5, padx = 10, pady = 10, sticky = E)
         
-        # ------KOLMAS RIDA-----
-        # ------KOLMAS RIDA-----
-        # ------KOLMAS RIDA-----
-        # ------KOLMAS RIDA-----
-        # ------KOLMAS RIDA-----
+        # ------THIRD ROW-----
+        # ------THIRD ROW-----
+        # ------THIRD ROW-----
+        # ------THIRD ROW-----
+        # ------THIRD ROW-----
         
-        #Spordiala
-        spordiala_label = Label(root, text = "Spordiala", bg = "white")
-        spordiala_label.grid(row = 2, column = 2, padx= 10, pady= 10, sticky = W)
+        #Sports
+        sports_label = Label(root, text = "Spordiala", bg = "white")
+        sports_label.grid(row = 2, column = 2, padx= 10, pady= 10, sticky = W)
         
-        self.spordiala_entry_value = StringVar(root, value = "")
-        self.spordiala_entry = ttk.Entry(root,
-                                         textvariable= self.spordiala_entry_value)
-        self.spordiala_entry.grid(row = 2, column = 3, padx = 10, pady = 10, sticky = W)
+        self.sports_entry_value = StringVar(root, value = "")
+        self.sports_entry = ttk.Entry(root,
+                                         textvariable= self.sports_entry_value)
+        self.sports_entry.grid(row = 2, column = 3, padx = 10, pady = 10, sticky = W)
         
-        #Klubi olemasolu
+        #Whether he has a club or not
         club_label = Label(root, text = "Klubi", bg = "white")
         club_label.grid(row = 2, column = 4, padx=10, pady=10, sticky=W)
         
@@ -323,13 +323,13 @@ class ÕpilasteAB :
         self.club_entry = ttk.Entry(root, textvariable = self.club_entry_value)
         self.club_entry.grid(row = 2, column = 5, padx=10, pady=10, sticky=W)
         
-        # ----- NELJAS RIDA -----
-        # ----- NELJAS RIDA -----
-        # ----- NELJAS RIDA -----
-        # ----- NELJAS RIDA -----
-        # ----- NELJAS RIDA -----
+        # ----- FOURTH ROW -----
+        # ----- FOURTH ROW -----
+        # ----- FOURTH ROW -----
+        # ----- FOURTH ROW -----
+        # ----- FOURTH ROW -----
         
-        #Mitu korda nädalas trenn
+        #Frequency of trainings
         freq_label = Label(root, text="Treeningute arv", bg= "white")
         freq_label.grid(row = 3, column = 2, padx=10, pady=10, sticky=W)
         
@@ -337,7 +337,7 @@ class ÕpilasteAB :
         self.freq_entry = ttk.Entry(root, textvariable = self.freq_entry_value)
         self.freq_entry.grid(row = 3, column = 3, padx=10, pady=10, sticky=W)
         
-        #Treeneri olemasolu
+        #Trainer's existence
         trainer_label = Label(root, text = "Treener", bg = "white")
         trainer_label.grid(row = 3, column = 4, padx=10, pady=10, sticky=W)
         
@@ -346,13 +346,13 @@ class ÕpilasteAB :
                                        textvariable = self.trainer_entry_value)
         self.trainer_entry.grid(row = 3, column = 5, padx=10, pady=10, sticky=W)
         
-        # ----- VIIES RIDA -----
-        # ----- VIIES RIDA -----
-        # ----- VIIES RIDA -----
-        # ----- VIIES RIDA -----
-        # ----- VIIES RIDA -----
+        # ----- FIFTH ROW -----
+        # ----- FIFTH ROW -----
+        # ----- FIFTH ROW -----
+        # ----- FIFTH ROW -----
+        # ----- FIFTH ROW -----
         
-        #Kaua tegelenud
+        #How many years has the student trained for
         length_label = Label(root, text = "Kaua tegelenud", bg = "white")
         length_label.grid(row = 4, column = 2, padx=10, pady=10, sticky=W)
         
@@ -362,20 +362,20 @@ class ÕpilasteAB :
         self.length_entry.grid(row = 4, column = 3, padx=10, pady=10, sticky=W)
         
         
-        #Saavutused
+        #Achievements
         achiev_label = Label(root, text = "Tähts. saavutused", bg = "white")
         achiev_label.grid(row = 4, column = 4, padx=10, pady=10, sticky=W)
         self.achiev_entry_value = StringVar(root, value = "")
         self.achiev_entry = ttk.Entry(root, textvariable = self.achiev_entry_value)
         self.achiev_entry.grid(row = 4, column = 5, padx=10, pady=10, sticky=W)
         
-        # ----- KUUES RIDA -----
-        # ----- KUUES RIDA -----
-        # ----- KUUES RIDA -----
-        # ----- KUUES RIDA -----
-        # ----- KUUES RIDA -----   
+        # ----- SIXTH ROW -----
+        # ----- SIXTH ROW -----
+        # ----- SIXTH ROW -----
+        # ----- SIXTH ROW -----
+        # ----- SIXTH ROW -----   
         
-        #Exceli nupp
+        #The button for the Excel file
         self.excel_button = ttk.Button(root,
                                        text = "Lisa exceli fail",
                                        command = lambda: self.stud_from_excel())
@@ -383,7 +383,7 @@ class ÕpilasteAB :
                                padx= 10, pady = 10, sticky = W + E)
 
 
-        #Õpilase lisamise nupp
+        #Button for adding students into DB
         self.submit_button = ttk.Button(root,
                             text="Lisa õpilane",
                             command=lambda: self.stud_submit())
@@ -391,20 +391,20 @@ class ÕpilasteAB :
         self.submit_button.grid(row=5, column=2, columnspan = 2,
                                 padx=10, pady=10, sticky=W + E)
         
-        #Õpilase info muutmise nupp
+        #Button for changing student's data
         self.update_button = ttk.Button(root,
                             text="Muuda andmeid",
                             command=lambda: self.update_student())
         self.update_button.grid(row=5, column=4, columnspan = 2,
                                 padx=10, pady=10,sticky = W + E)
         
-        # ----- SEITSMES RIDA -----
-        # ----- SEITSMES RIDA -----
-        # ----- SEITSMES RIDA -----
-        # ----- SEITSMES RIDA -----
-        # ----- SEITSMES RIDA -----
+        # ----- SEVENTH ROW -----
+        # ----- SEVENTH ROW -----
+        # ----- SEVENTH ROW -----
+        # ----- SEVENTH ROW -----
+        # ----- SEVENTH ROW -----
         
-        #Õpilaste filtreerimine
+        #Button for filtering students
         flt_label = ttk.Button(root,
                                text = "Otsi",
                                command = lambda: self.search_student_command())
@@ -417,9 +417,8 @@ class ÕpilasteAB :
         self.flt_entry.grid(row = 6, column = 1,
                             padx = 10, pady = 10, sticky = W)
 
-# root - raam
+
 root = Tk()
-# Tee Andmebaas ekraanile
 õpAB = ÕpilasteAB(root)
 root.mainloop()
 
