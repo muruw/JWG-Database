@@ -1,0 +1,13 @@
+Tegemist on seoses Marcus Murumäe praktilise tööga valminud andmebaasiga, mille eesmärgiks on 
+automatiseerida JWG kehalise kasvatuse õpetajate tööd.
+
+Õpetus:
+
+Andmebaasi avamiseks kasutage jwg_andmebaas.exe faili
+
+Kasutajanimi : admin
+parool: 123
+
+Õpilaste lisamine läbi Exceli faili:
+1) Täitke Exceli fail ning salvestage see
+2) Kasutage andmebaasi selle otsimiseks

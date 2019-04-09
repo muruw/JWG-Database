@@ -1,10 +1,53 @@
-from tkinter import *
-from tkinter import ttk
-from tkinter import filedialog
-from PIL import Image, ImageTk
 import openpyxl
 import sqlite3
 
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+
+from PIL import Image, ImageTk
+
+
+class LogIn:
+    
+    def __init__(self, root):
+        root.title("JWG Andmebaas")
+        root.geometry("240x150")
+        root.resizable(width = False, height = False)
+        root["bg"] = "white" #Background = white
+
+        #Username
+        label1 = Label(root, text = "Kasutajanimi", bg = "white")
+        label1.grid(row = 0, column = 0, padx = 10, pady = 10, sticky = W)
+
+        self.label1_entry_value = StringVar(root, value = "")
+        self.label1_entry = ttk.Entry(root,
+                                      textvariable = self.label1_entry_value)
+        self.label1_entry.grid(row = 0, column = 1, padx = 10, pady = 10, sticky = W)
+
+        #Password
+        label2 = Label(root, text = "Parool", bg = "white")
+        label2.grid(row = 1, column = 0, padx = 10, pady = 10, sticky = W)
+
+        self.label2_entry_value = StringVar(root, value = "")
+        self.label2_entry = ttk.Entry(root, show = "*",
+                                      textvariable = self.label2_entry_value)
+        self.label2_entry.grid(row = 1, column = 1, padx = 10, pady = 10, sticky = W)
+
+
+
+        self.login_button = ttk.Button(root,
+                            text="Logi sisse",
+                            command=lambda: self.login())
+        self.login_button.grid(row=2, column=0, columnspan = 2,
+                                padx=10, pady=10,sticky = W + E)
+
+
+    def login(self):
+        if self.label1_entry_value.get() == "admin" and self.label2_entry_value.get() == "123":
+            self.newWindow = Toplevel(root)
+            self.õpAB = ÕpilasteAB(self.newWindow)
+        
 
 class ÕpilasteAB :
     
@@ -419,6 +462,5 @@ class ÕpilasteAB :
 
 
 root = Tk()
-õpAB = ÕpilasteAB(root)
+õpAB = LogIn(root)
 root.mainloop()
-
