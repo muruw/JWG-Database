@@ -3,4 +3,7 @@ A database for school project I had been working on. The database gives an abili
 
 I have also uploaded a .exe file if you only want to see the program in action. Also, make sure all the files are in the same folder before executing the .exe file!
 
+![Screenshot](login.PNG)
+![Screenshot](application.PNG)
+
 Marcus Murumäe  
